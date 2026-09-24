@@ -2,7 +2,7 @@
   "Pure unit tests of `applianceops.governor/check` against hand-built
   proposals -- the fast, focused complement to `governor-contract-test`'s
   full-graph integration coverage."
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [applianceops.advisor :as adv]
             [applianceops.governor :as gov]
             [applianceops.store :as store]))
