@@ -1,0 +1,44 @@
+;; What this vertical's robot physically does, declared for
+;; kotoba.robotics.process (kotoba-lang/robotics). `kbb -M:dev:physics` runs it.
+;;
+;; README "Robotics premise": a robot may perform the physical work of an
+;; appliance / furniture / lighting store (ISIC 4759) -- shelfing, picking,
+;; delivery loading, floor merchandising. Here: an arm picking boxed small
+;; appliances onto a shelf, and a powered appliance dolly moving a
+;; refrigerator across the showroom and up the delivery truck's ramp.
+;;
+;; Every number without a cited source is marked `estimate` in its :basis.
+;; Replacing an estimate with a sourced value is this bot's growth work.
+{:physics/schema "itonami.physical-ai.spec.v1"
+ :repo "cloud-itonami/cloud-itonami-isic-4759"
+ :cases
+ [{:id :small-appliance-box-to-shelf
+   :kind :manipulator
+   :procedure "arm picks a boxed small appliance (kettle to microwave) from the tote and places it on the display shelf"
+   :params {:l1-m 0.55 :l2-m 0.50 :m1-kg 5.0 :m2-kg 3.5
+            :from [0.70 0.10] :to [0.30 0.85] :duration-s 3.0 :steps 500}
+   :sweep {:param :payload-kg :values [3.0 8.0 12.0 18.0 25.0]}
+   :quantity :peak-tau1-nm
+   :limit {:max 150.0 :basis "estimate: continuous shoulder torque of a ~12 kg-payload collaborative arm"}
+   :boundary {:lo 0.5 :hi 60.0}}
+  {:id :fridge-dolly-showroom-stop
+   :kind :transport
+   :procedure "powered appliance dolly moves an upright 120 kg refrigerator across the showroom and brakes for a customer"
+   :params {:mass-kg 40.0 :payload-kg 120.0 :distance-m 30.0 :v-max-mps 0.8 :a-max-mps2 0.4
+            :drive-force-n 600.0 :crr 0.015 :cog-height-m 0.30 :payload-cog-height-m 0.95
+            :support-half-length-m 0.30 :max-time-s 600.0}
+   :sweep {:param :brake-decel-mps2 :values [0.5 1.0 1.5 2.0 3.0 4.0]}
+   :quantity :min-tipover-margin
+   :limit {:min 0.25 :basis "estimate: keep a 25 % stability reserve for a tall appliance on a short-wheelbase dolly"}
+   :boundary {:lo 0.3 :hi 6.0}}
+  {:id :fridge-dolly-truck-ramp
+   :kind :transport
+   :procedure "the same dolly pushes the refrigerator up the delivery truck's loading ramp and stops at the top"
+   :params {:mass-kg 40.0 :payload-kg 120.0 :distance-m 4.0 :v-max-mps 0.5 :a-max-mps2 0.3
+            :brake-decel-mps2 1.0 :drive-force-n 600.0 :crr 0.02
+            :cog-height-m 0.30 :payload-cog-height-m 0.95
+            :support-half-length-m 0.30 :max-time-s 600.0}
+   :sweep {:param :slope-deg :values [0.0 3.0 6.0 9.0 12.0]}
+   :quantity :min-tipover-margin
+   :limit {:min 0.25 :basis "estimate: same 25 % stability reserve on the ramp, where the grade adds to the braking tip moment"}
+   :boundary {:lo 0.0 :hi 20.0}}]}
